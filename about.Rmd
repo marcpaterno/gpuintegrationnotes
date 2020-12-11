@@ -1,0 +1,15 @@
+---
+title: "About this blog"
+description: |
+  This is a blog about exploring multidimensional numerical integration on GPUs.
+  It describes work is done as part of the Fermi National Accelerator
+  Laboratory's LDRD project "Numerical Integration on GPUs" (LDRD 2020-050).
+  
+  This is the place where we keep "working notes" for the project.
+  These working notes are always a work-in-progress for a research project,
+  and emphatically are *not* the final publishable project results.
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```

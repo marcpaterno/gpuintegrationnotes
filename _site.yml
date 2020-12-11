@@ -1,0 +1,19 @@
+name: "gpuintegrationnotes"
+title: "GPU Integration Notes"
+description: |
+  Exploring multidimensional numerical integration on GPUs. This work is done as
+  part of the Fermi National Accelerator Laboratory's LDRD project "Numerical
+  Integration on GPUs" (LDRD 2020-050).
+output_dir: "docs"
+navbar:
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+    - icon: fa fa-rss
+      href: index.xml
+output:
+  distill::distill_article:
+    toc: true
+    theme: theme.css

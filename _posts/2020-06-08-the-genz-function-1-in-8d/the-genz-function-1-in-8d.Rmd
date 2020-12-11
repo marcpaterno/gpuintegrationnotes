@@ -1,0 +1,82 @@
+---
+title: "The Genz function 1 in 8d"
+description: |
+  This document shows a performance comparison between the serial
+  and parallel implementations of the CUHRE algorithm for a
+  non-positive-definite integrand.
+author:
+  - name: Marc Paterno
+    url: https://github.com/marcpaterno
+date: 06-08-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## The integrand
+
+The integrand chosen is:
+$$ \cos(s + 2 t + 3 u +4 w +5 w + 6 x +7 y + 8 z) / k$$
+with
+$$ k = (1/315)  \sin(1)  \sin(3/2) \sin(2) \sin(5/2) \sin(3) 
+       \sin(7/2) \sin(4) (\sin(37/2) - \sin(35/2)). $$
+
+$k$ is approximately equal to
+`r format((1/315) * sin(1) * sin(3/2) * sin(2) *sin(5/2) * sin(3) * sin(7/2) * sin(4) * (sin(37/2) - sin(35/2)), digits=15)`.
+
+## Testing environment
+
+These tests were run on `ibmpower9.fnal.gov`.
+
+```{r child = '../../power9_description.Rmd'}
+```
+
+## Description of the dataframe
+
+```{r child = '../../dataframe-description.Rmd'}
+```
+
+```{r read_data, echo = FALSE, message = FALSE}
+# d <- bind_rows(read_tsv("genz_1_8d.out.bz2"),
+#                read_tsv("cuda_genz_1_8d.out.bz2"))
+d <- read_tsv("genz_1_8d.out.bz2") %>%
+  mutate(r = errorest/(epsrel*value)) %>%
+  arrange(alg, desc(epsrel))
+
+knitr::kable(d) #, digits = 8)
+```
+
+## Analysis
+
+We do not yet have results from the parallel algorithm.
+These results are from the serial algorithm.
+
+Because the range of fractional error tolerance values is large, and the range of times is very large, we use log scales for our plot.
+The line is a fitted linear model; the fit is clearly poor.
+
+```{r, echo = FALSE, message = FALSE}
+ggplot(d, aes(1/epsrel, time)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(vars(alg))
+```
+
+The number of regions needed to obtain a given fractional error tolerance seems to be related in a power law
+to the reciprocal of the fractional error tolerance.
+
+```{r, echo = FALSE, message = FALSE}
+ggplot(d, aes(1/epsrel, nregions)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm") +
+  facet_wrap(vars(alg))
+```

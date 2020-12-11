@@ -1,0 +1,53 @@
+[
+  {
+    "path": "posts/2020-06-10-where-serial-cuhre-evaluates-functions/",
+    "title": "Where serial CUHRE evaluates functions",
+    "description": "A visualization of where CUHRE evaluates functions for a 2-dimensional integrand.",
+    "author": [
+      {
+        "name": "Marc Paterno",
+        "url": "https://github.com/marcpaterno"
+      }
+    ],
+    "date": "2020-06-10",
+    "categories": [],
+    "contents": "\nThis document shows where the serial CUHRE algorithm evaluates the function it is integrating. Unlike a Monte Carlo algorithm (such as VEGAS), CUHRE evaluates the function at a set of deterministically chosen points.\nThe function used as the integrand in this example is:\n\\[ 2 x^2 + 2 y - y^2.\\] We have used both VEGAS and CUHRE to integrate this function, using a fractional error tolerance of 0.01. The large fractional error was chosen to limit the number of function evaluations. This function is sufficiently simple that CUHRE uses only two regions. The plots show where VEGAS and CUHRE each evaluate the function to achieve this level of accuracy.\n\n\n\nVEGAS required 2500 function evaluations, and CUHRE required 195.\n\n\n\n\n\n\n",
+    "preview": "posts/2020-06-10-where-serial-cuhre-evaluates-functions/where-serial-cuhre-evaluates-functions_files/figure-html5/unnamed-chunk-2-1.png",
+    "last_modified": "2020-12-10T15:14:36-06:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/2020-06-08-the-genz-function-1-in-8d/",
+    "title": "The Genz function 1 in 8d",
+    "description": "This document shows a performance comparison between the serial\nand parallel implementations of the CUHRE algorithm for a\nnon-positive-definite integrand.",
+    "author": [
+      {
+        "name": "Marc Paterno",
+        "url": "https://github.com/marcpaterno"
+      }
+    ],
+    "date": "2020-06-08",
+    "categories": [],
+    "contents": "\nThe integrand\nThe integrand chosen is: \\[ \\cos(s + 2 t + 3 u +4 w +5 w + 6 x +7 y + 8 z) / k\\] with \\[ k = (1/315)  \\sin(1)  \\sin(3/2) \\sin(2) \\sin(5/2) \\sin(3) \n       \\sin(7/2) \\sin(4) (\\sin(37/2) - \\sin(35/2)). \\]\n\\(k\\) is approximately equal to 3.43955795218325e-05.\nTesting environment\nThese tests were run on ibmpower9.fnal.gov.\nThe Power9 machine used in these tests is a PowerNV 8335-GTG (AC 922) system. It has two processors, each with 8 cores. Each core has 4 slices.\n\nDescription of the dataframe\nalg: the name of the algorithm\nepsrel: the fractional error target\nvalue: the estimated value of the integral\nerrorest: the estimated error for the result\nerror: the absolute difference between the estimated value and the true value\nneval: the number of function evaluations used\nnregions: the number of regions used\ntime: the time in milliseconds for the calculation\nr: ratio of (errorest/(epsrel*value)); this should be less than 1 if the algorithm has converged\nconverged: boolean showing whether r < 1\nA value of NA indicates that the algorithm did not converge, but rather stopped because the maximum number of function evaluations had been reached.\n\n\nalg\nepsrel\nvalue\nerrorest\nerror\nneval\nnregions\ntime\nr\ncuhre\n1.00e-03\n0.9999127\n0.0009999\n8.73e-05\n48526075\n21958\n26820.71\n0.9999513\ncuhre\n5.00e-04\n1.0000750\n0.0005000\n7.51e-05\n79205295\n35840\n44249.74\n0.9999650\ncuhre\n2.50e-04\n1.0000490\n0.0002500\n4.89e-05\n124311395\n56250\n70582.94\n0.9999806\ncuhre\n1.25e-04\n1.0000140\n0.0001250\n1.36e-05\n202753135\n91744\n121709.60\n0.9999916\ncuhre\n6.25e-05\n1.0000040\n0.0000625\n4.10e-06\n335613915\n151862\n230264.20\n0.9999955\ncuhre\n3.12e-05\n1.0000010\n0.0000312\n1.50e-06\n548874495\n248360\n451179.80\n0.9999961\ncuhre\n1.56e-05\n0.9999997\n0.0000156\n3.00e-07\n882520405\n399331\n935296.90\n0.9999971\ncuhre\n7.80e-06\n1.0000010\n0.0000078\n9.00e-07\n1388581675\n628318\n2060807.00\n0.9999987\ncuhre\n3.90e-06\n1.0000000\n0.0000039\n2.00e-07\n2117439675\n958118\n4446506.00\n0.9999990\ncuhre\n2.00e-06\n1.0000000\n0.0000020\n2.00e-07\n3294176275\n1490578\n10027550.00\n0.9999995\n\nAnalysis\nWe do not yet have results from the parallel algorithm. These results are from the serial algorithm.\nBecause the range of fractional error tolerance values is large, and the range of times is very large, we use log scales for our plot. The line is a fitted linear model; the fit is clearly poor.\n\n\n\nThe number of regions needed to obtain a given fractional error tolerance seems to be related in a power law to the reciprocal of the fractional error tolerance.\n\n\n\n\n\n\n",
+    "preview": "posts/2020-06-08-the-genz-function-1-in-8d/the-genz-function-1-in-8d_files/figure-html5/unnamed-chunk-3-1.png",
+    "last_modified": "2020-12-10T11:55:16-06:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/2020-06-06-welcome-to-the-blog/",
+    "title": "Welcome to the blog",
+    "description": "Welcome to our new blog, GPU Integration Notes.",
+    "author": [
+      {
+        "name": "Marc Paterno",
+        "url": "https://github.com/marcpaterno"
+      }
+    ],
+    "date": "2020-06-06",
+    "categories": [],
+    "contents": "\nThis will be the place where we post articles describing the work on our laboratory-directed research and development project “Numerical Integration on GPUs” (LDRD-2020-050). This project is supported by the Fermi National Accelerator Laboratory’s LDRD program.\nThe research is being conducted by:\nDr. Marc Paterno (Fermi National Accelerator Laboratory)\nIoannis Sakiotis (Old Dominion University)\nProf. Desh Ranjan (Old Dominion University)\nProf. Balsa Terzoc (Old Dominion University)\nProf. Mohammad Zubair (Old Dominion University)\n\n\n\n",
+    "preview": {},
+    "last_modified": "2020-12-10T11:54:37-06:00",
+    "input_file": {}
+  }
+]

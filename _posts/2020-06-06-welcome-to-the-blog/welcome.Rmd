@@ -1,0 +1,31 @@
+---
+title: "Welcome to the blog"
+description: |
+  Welcome to our new blog, GPU Integration Notes.
+author:
+  - name: Marc Paterno
+    url: https://github.com/marcpaterno
+    affiliation: Fermi National Accelerator Laboratory
+    affiliation_url: https://fnal.gov
+date: 06-06-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+This will be the place where we post articles describing the work on our
+laboratory-directed research and development project "Numerical Integration on
+GPUs" (LDRD-2020-050). This project is supported by the Fermi National
+Accelerator Laboratory's LDRD program.
+
+The research is being conducted by:
+
+* Dr. Marc Paterno (Fermi National Accelerator Laboratory)
+* Ioannis Sakiotis (Old Dominion University)
+* Prof. Desh Ranjan (Old Dominion University)
+* Prof. Balsa Terzoc (Old Dominion University)
+* Prof. Mohammad Zubair (Old Dominion University)
