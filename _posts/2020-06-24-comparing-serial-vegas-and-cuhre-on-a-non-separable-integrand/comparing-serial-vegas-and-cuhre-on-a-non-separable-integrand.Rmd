@@ -1,0 +1,148 @@
+---
+title: "Comparing serial VEGAS and CUHRE on a (partially) non-separable integrand"
+description: |
+  This document shows a comparison of the speed of the serial VEGAS and CUHRE
+  algorithms, as implemented in the CUBA (http://www.feynarts.de/cuba/) library,
+  and wrapped by `cubacpp` (https://bitbucket.org/mpaterno/cubacpp), on a
+  non-separable integrand.
+  
+  Note this was updated on 2020-12-13.
+author:
+  - name: Marc Paterno
+    url: https://github.com/marcpaterno
+date: 06-24-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rmarkdown)
+library(tidyverse)
+```
+
+## The algorithms
+
+`vegas` is the Vegas algorithm of Lepage, as implemented in the CUBA library.
+This version uses quasi-random (low-descrepency sequence) numbers, rather than pseudo-random numbers.
+`cuhre_0` is the serial CUHRE algorithm, as implemented in the CUBA library, using `flag` = 0.
+This version uses all the volumes produced by the algorithm for determining the final result.
+`cuhre_1` is the serial CUHRE algorithm, as implemented in the CUBA library, using `flag` = 4.
+This version uses only the final set of volumes produced by the algorithm for determining the final result.
+
+## The integrand
+
+The integrand chosen is:
+$$ u \, v + k \frac{x \, y \, w^y}{1+u} +z^2 $$
+with
+$$k = \frac{12}{7 - 6 (\ln(2))^2 + \ln(64)}$$.
+
+The correct value of the integral is 1.
+
+## Testing environment
+
+These tests were run on a MacBook Pro laptop.
+
+```{r child = '../../mac130389-description.Rmd'}
+```
+
+## Description of the dataframe
+
+```{r child = '../../dataframe-description.Rmd'}
+```
+
+```{r read_data, echo = FALSE, message = FALSE}
+d <- read_tsv("fun6_vegas_cuhre_comparison.tsv.xz") %>%
+  mutate(r = errorest/(epsrel*value),
+         alg = factor(alg, levels =c("vegas", "cuhre_0", "cuhre_1") )) %>%
+  arrange(desc(epsrel), alg)
+
+paged_table(d)
+```
+
+## Analysis
+
+As one measure of the innate "efficiency" of each algorithm,
+we consider how many function evaluations are required
+to obtain a given fractional error tolerance.
+
+```{r, echo = FALSE}
+ggplot(d, aes(1/epsrel, neval, color = alg)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x = "Inverse of fractional error tolerance", y = "Number of function evaluations required")
+```
+
+For this integrand, VEGAS always requires more function calls than does CUHRE.
+CUHRE with flag=0 requires fewer function evaluations than it does with flag=4.
+
+### Calculation time as a function of required error tolerance
+
+```{r, echo = FALSE}
+ggplot(d, aes(1/epsrel, time, color=alg)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x="Inverse of error tolerance", y="Calculation time (ms)")
+
+```
+
+### Error estimate and function evaluations
+
+```{r echo = FALSE, message = FALSE}
+d %>%
+ggplot(aes(neval, errorest, color = alg)) +
+  geom_smooth(method = "lm") +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x = "Number of integrand evaluations", "Fractional error estimate")
+```
+
+### Reliability of error estimate
+
+If we look only at the calculations that converged, how accurate are the error
+estimates?
+
+```{r, echo=FALSE}
+filter(d, !is.na(value)) %>%
+  ggplot(aes(1/epsrel, abs(error)/errorest, color = alg)) +
+  scale_y_log10(labels = scales::comma) +
+  scale_x_log10() +
+  geom_point() +
+  labs(x = "Inverse of error tolerance",
+       y = "Ratio of actual error to estimated error")
+```
+
+If the error estimate is reliable, then the ratio should not exceed 1.
+At the most stringent (fractional) error tolerances, the error estimate from
+the CUHRE algorithm with flag=0 are not reliable.
+That is, the algorithm is claiming to have converged when it actually has not
+converged.
+
+### Error estimate as a function of running time
+
+Users do not really care about the number of function evaluations done;
+they care about the time the algorithm takes to converge for a given
+error tolerance, and that the algorithm has actually converged to that tolerance.
+
+```{r, echo = FALSE}
+filter(d, !is.na(value)) %>%
+  ggplot(aes(1/epsrel, time, color = alg)) +
+  scale_x_log10() +
+  scale_y_log10(labels = scales::comma) +
+  geom_point() +
+  labs(x = "Inverse of error tolerance",
+       y = "Calculation time (ms)")
+```
+
+For this integrand, the CUHRE algorithm is much faster than VEGAS.
+The CUHRE algorithm with flag = 0 is faster for large error tolerances,
+but as we have seen above, the error estimate (and thus the convergence)
+becomes unreliable.
+Since in real problems the user would *not* know the value of the integral
+(or they would not be using a numerical approximation method!),
+it seems prudent to use the algorithm with flag = 4 -- at least for this
+integrand.
