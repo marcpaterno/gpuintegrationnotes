@@ -34,7 +34,7 @@ This version uses only the final set of volumes produced by the algorithm for de
 ## The integrand
 
 The integrand chosen is:
-$$ u \, v + k \frac{x \, y \, w^y}{1+u} +z^2 $$
+$$ k (u \, v + \frac{x \, y \, w^y}{1+u} +z^2) $$
 with
 $$k = \frac{12}{7 - 6 (\ln(2))^2 + \ln(64)}$$.
 
