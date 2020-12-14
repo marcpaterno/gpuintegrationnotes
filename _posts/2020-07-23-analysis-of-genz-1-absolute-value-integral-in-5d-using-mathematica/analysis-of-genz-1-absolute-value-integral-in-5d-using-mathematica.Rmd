@@ -1,0 +1,112 @@
+---
+title: "Analysis of Genz 1 (absolute value) integral in 5D using Mathematica"
+description: |
+  This document looks at the Genz_1 (absolute value) integral in 5D as solved
+  by Mathematica. This integral can not be solved analytically, so we try using
+  Mathematica's facilities for numerical integration with controlled error
+  bounds.
+author:
+  - name: Marc Paterno
+    url: https://github.com/marcpaterno
+date: 07-23-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(digits = 9)
+library(tidyverse)
+library(rmarkdown)
+```
+
+## Problem statement
+
+The Mathematica routine `NIntegrate` takes an argument `PrecisionGoal` that
+specifies the number of (decimal) significant digits of precision is wanted.
+This is analagous to (bit not identical to) our control parameter of `epsrel`.
+
+We used the routine `NIntegrate` on the integrand
+$$ | \cos(4 v +5 w + 6 x +7 y + 8 z)|$$
+(note the lack of a normalization constant), varying the `PrecisionGoal` from
+1 to 9. We used the Mathematica function `Timing` to mreasure the CPU time taken
+for each evalution.
+
+In this dataframe:
+
+1. *t* is the time in seconds to perform the integration
+2. *estimate* is the estimated value of the integral
+3. *prec* is the number of decimal digits of precision requested
+4. *delta* is the difference between *estimate* and the previous *estimate*
+5. *z* is the absolute value of *delta* times 10^prec
+
+## Do the estimates seem to be converging as the error tolerance is tightened?
+
+If each increase in *prec* does in fact generate one more significant (decimal)
+digit of precision, we should expect *z* to be about 1 for each row.
+
+```{r, message=FALSE}
+d <- read_tsv("math.tsv.bz2")
+d$prec <- seq_along(d[[1]])
+d <- mutate(d,
+            delta = estimate - lag(estimate),
+            z = abs(delta) * 10**prec)
+d %>% knitr::kable()
+```
+
+We are not seeing wild variations, once we get past the very low precision
+calculations:
+
+```{r, echo = FALSE}
+ggplot(d, aes(prec, estimate)) +
+  geom_point() +
+  scale_x_continuous(breaks=1:10, minor_breaks = NULL) +
+  scale_y_continuous(limits=c(0.635, 0.645))
+```
+
+However, we note that the we are also not seeing that the value is stable to
+the degree it should be, if the calculation were truly done to the number of
+significant digits claimed. Mathematica is clearly having trouble obtaining an
+error estimate of high quality.
+
+## How long does the calculation take?
+
+Mathematica is using a single core to perform the integration, and working with
+native double precision floating-point numbers for this calculation. We have no
+indication from these results that using Mathematica's extended-precision 
+calculation ability is needed.
+
+For `prec>4`, there seems to be a (very approximate) power law relation
+between the time taken and the specified precision.
+
+```{r}
+ggplot(d, aes(prec, t)) +
+  geom_point() +
+  scale_x_continuous(breaks=1:10, minor_breaks = NULL) +
+  scale_y_log10() +
+  labs(x = "required digits of precision", y = "time (s)")
+```
+
+Concentrating only on `prec > 3`, we can plot the power law fit.
+It is not an especially good fit, but probably has at least some predictive
+utility.
+
+```{r, message=FALSE}
+d %>%
+  mutate(t = t/3600) %>% 
+  filter(prec>3) %>% 
+  ggplot(aes(prec, t)) +
+  geom_smooth(method="lm") +
+  geom_point() +
+  scale_y_log10(breaks = c(0.001, 0.01, 0.1, 1.0, 10.0),
+                minor_breaks=NULL,
+                labels = c("0.001", "0.01", "0.1", "1.0", "10.0")) +
+  scale_x_continuous(breaks=1:10, minor_breaks = NULL) +
+  labs(x = "required digits of precision", y = "time (hr)")
+```
+
+Given the rapid increase in the time required for the calculation, it would
+seem like `PrecisionGoal=9` is the largest feasible value to use for this
+calculation; 10 digits would require several days' time.
