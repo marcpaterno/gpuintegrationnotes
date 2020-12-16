@@ -7,6 +7,7 @@ author:
   - name: Marc Paterno
     url: https://github.com/marcpaterno
 date: 12-15-2020
+updated: 12-16-2020
 output:
   distill::distill_article:
     self_contained: false
@@ -32,6 +33,7 @@ $$k = 4050 / \left(43200+14920 \pi -125840 \tan^{-1}(\frac{3}{70})-14920 \tan^{-
 54000 \tan^{-1}(\frac{50}{3})+54000 \tan^{-1}(\frac{70}{3})+17946 \log(109)-3573 \log(2509)-14373 \log(4909) \right).$$
 The approximate value of $k$ is 0.01890022674239546529975841.
 
+The volume of integration is (-1, 1) for both $x$ and $y$.
 The correct value of the integral is 1.
 
 ## Testing environment

@@ -93,6 +93,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--  https://schema.org/Article -->
 <meta property="article:published" itemprop="datePublished" content="2020-12-15"/>
 <meta property="article:created" itemprop="dateCreated" content="2020-12-15"/>
+<meta property="article:modified" itemprop="dateModified" content="2020-12-16T00:00:00.000+00:00"/>
 <meta name="article:author" content="Marc Paterno"/>
 
 <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -111,7 +112,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
 <script type="text/json" id="radix-rmarkdown-metadata">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["A two-dimensional integrand with a diagonal ridge"]},{"type":"character","attributes":{},"value":["This document looks the performance of the serial CUHRE and VEGAS algorithms\non a function that has a diagnoal ridge."]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url"]}},"value":[{"type":"character","attributes":{},"value":["Marc Paterno"]},{"type":"character","attributes":{},"value":["https://github.com/marcpaterno"]}]}]},{"type":"character","attributes":{},"value":["12-15-2020"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained"]}},"value":[{"type":"logical","attributes":{},"value":[false]}]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","updated","output"]}},"value":[{"type":"character","attributes":{},"value":["A two-dimensional integrand with a diagonal ridge"]},{"type":"character","attributes":{},"value":["This document looks the performance of the serial CUHRE and VEGAS algorithms\non a function that has a diagnoal ridge."]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url"]}},"value":[{"type":"character","attributes":{},"value":["Marc Paterno"]},{"type":"character","attributes":{},"value":["https://github.com/marcpaterno"]}]}]},{"type":"character","attributes":{},"value":["12-15-2020"]},{"type":"character","attributes":{},"value":["12-16-2020"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained"]}},"value":[{"type":"logical","attributes":{},"value":[false]}]}]}]}
 </script>
 <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -2361,7 +2362,7 @@ d-appendix d-footnote-list a.footnote-backlink {
 <p>The serial VEGAS algorithm typically is challenged by integrands that are not separable, and which contain ridges that are not aligned with the coordinate axes. This analysis uses such an integrand to demonstrate this issue.</p>
 <p>The integrand chosen is: <span class="math display">\[\frac{4 k u^2}{\frac{1}{100}+\left(u-v -\frac{1}{3}\right)^2}\]</span> with <span class="math display">\[k = 4050 / \left(43200+14920 \pi -125840 \tan^{-1}(\frac{3}{70})-14920 \tan^{-1}(\frac{3}{50})+110920 \tan^{-1}(\frac{3}{10})+ \\
 54000 \tan^{-1}(\frac{50}{3})+54000 \tan^{-1}(\frac{70}{3})+17946 \log(109)-3573 \log(2509)-14373 \log(4909) \right).\]</span> The approximate value of <span class="math inline">\(k\)</span> is 0.01890022674239546529975841.</p>
-<p>The correct value of the integral is 1.</p>
+<p>The volume of integration is (-1, 1) for both <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>. The correct value of the integral is 1.</p>
 <h2 id="testing-environment">Testing environment</h2>
 <p>These tests were run on a MacBook Pro laptop.</p>
 <p>The MacBook machine used in these tests has a single 4-core 2.9 GHz Intel Core i7 processor.</p>
