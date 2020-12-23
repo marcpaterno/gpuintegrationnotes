@@ -1,0 +1,244 @@
+---
+title: "Comparing the new CUBA release to the old"
+description: |
+  In Novemer of 2020, release CUBA 4.2.1 was released. This article compares the
+  performance of CUBA 4.2.1 to that of CUBA 4.2.
+author:
+  - name: Marc Paterno
+    url: https://github.com/marcpaterno
+date: 12-22-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(rmarkdown)
+library(tidyverse)
+```
+
+## Purpose of this article
+
+In November of 2020, CUBA version 4.2.1 was released.
+This version included a number of "minor fixes", and a correction of some of
+the tables of coefficients used by the CUHRE algorithm.
+In this article we compare the behavior of the newest version of CUBA to data
+previously collec`ted with CUBA 4.2.
+
+## Integrands and volumes of integration
+
+The integrands used for this article are:
+
+* fun6 : $k (u \, v + (x \, y \, w^y)/(1+u) +z^2)$, integrated over the unit volume
+* genz_1abs_5d : $| \cos(4 v +5 w + 6 x +7 y + 8 z)|$, integrated over the unit volume
+* h2 : $(4 k u^2)/(\frac{1}{100}+\left(u-v -\frac{1}{3}\right)^2)$, integrated over $-1<x<1$, $-1<y<1$.
+
+These are the same integrands used in our earlier articles.
+
+## Read the data
+
+```{r}
+read_both <- function(igrand) {
+  x0 <- vroom::vroom(sprintf("%s_cuba-4.2.tsv.xz", igrand), comment = "#")
+  x0$version = "4.2"
+  x1 <- vroom::vroom(sprintf("%s_cuba-4.2.1.tsv.xz", igrand), comment = "#")
+  x1$version = "4.2.1"
+  x <- bind_rows(x0, x1)
+  x$integrand = igrand
+  x
+}
+```
+
+```{r}
+x <- bind_rows(lapply(c("fun6", "genz1abs_5d", "h2"), read_both)) %>%
+  mutate(integrand = as_factor(integrand),
+         alg = as_factor(alg),
+         version = as.factor(version),
+         neval = as.integer(neval),
+         nregions = as.integer(nregions)) %>%
+  select(integrand, alg, version, epsrel, value, errorest, error, neval, nregions, time)
+
+paged_table(x)
+```
+
+## Comparison of error estimates
+
+The quality of the error estimate for each algorithm is of the highest import,
+so we consider that first.
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_0") %>%
+  ggplot(aes(1/epsrel, errorest, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Fractional error estimate",
+       title="cuhre_0")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_1") %>%
+  ggplot(aes(1/epsrel, errorest, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Fractional error estimate",
+       title="cuhre_1")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "vegas") %>%
+  ggplot(aes(1/epsrel, errorest, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Fractional error estimate",
+       title = "vegas")
+```
+
+The difference in the plots for `fun6` is a result of an upgrading of the
+performance measurement harness, which now uses more closely-spaced error 
+tolerances and which has a less extreme upper end to the error tolerance used.
+
+In no case does the new algorithm seem to differ in its results from the old.
+
+## Comparison of integral estimates
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_0") %>%
+  ggplot(aes(1/epsrel, value, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  facet_wrap(vars(integrand), scales = "free_x", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Integral estimate",
+       title="cuhre_0")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_1") %>%
+  ggplot(aes(1/epsrel, value, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  facet_wrap(vars(integrand), scales = "free_x", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Integral estimate",
+       title="cuhre_1")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "vegas") %>%
+  ggplot(aes(1/epsrel, value, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  facet_wrap(vars(integrand), scales = "free_x", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Integral estimate",
+       title = "vegas")
+```
+
+For the integral estimates, there is no observable difference between the
+old and new releases.
+
+## Number of function calls
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_0") %>%
+  ggplot(aes(1/epsrel, neval, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Number of function evaluations",
+       title="cuhre_0")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_1") %>%
+  ggplot(aes(1/epsrel, neval, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Number of function evaluations",
+       title="cuhre_1")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "vegas") %>%
+  ggplot(aes(1/epsrel, neval, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Number of function evaluations",
+       title = "vegas")
+```
+
+There is no observable difference in the number of function calls required by
+any of the algorithms.
+
+## Timing
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_0") %>%
+  ggplot(aes(1/epsrel, time, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Calculation time",
+       title="cuhre_0")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "cuhre_1") %>%
+  ggplot(aes(1/epsrel, time, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Calculation time",
+       title="cuhre_1")
+```
+
+```{r layout="l-body-outset"}
+filter(x, alg == "vegas") %>%
+  ggplot(aes(1/epsrel, time, shape = version)) +
+  geom_point() +
+  scale_shape_manual(values = c(1,4)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  facet_wrap(vars(integrand), scales = "free", ncol=1) +
+  labs(x = "Inverse of error tolerance",
+       y = "Calculation time",
+       title = "vegas")
+```
+
+There seems to be a small speed improvement in the newer algorithm version.
+However, it is possible that this speed difference is due to the newer
+compiler version used to build the newer CUBA code.
