@@ -6,32 +6,32 @@
       "description": "This is a blog about exploring multidimensional numerical integration on GPUs.\nIt describes work is done as part of the Fermi National Accelerator\nLaboratory's LDRD project \"Numerical Integration on GPUs\" (LDRD 2020-050).\n\nThis is the place where we keep \"working notes\" for the project.\nThese working notes are always a work-in-progress for a research project,\nand emphatically are *not* the final publishable project results.",
       "author": [],
       "contents": "\n\n\n\n",
-      "last_modified": "2021-01-07T13:19:04-06:00"
+      "last_modified": "2021-01-07T13:34:48-06:00"
     },
     {
       "path": "dataframe-description.html",
       "author": [],
       "contents": "\nalg: the name of the algorithm\nepsrel: the fractional error target\nvalue: the estimated value of the integral\nerrorest: the estimated error for the result\nerror: the absolute difference between the estimated value and the true value\nneval: the number of function evaluations used\nnregions: the number of regions used\ntime: the time in milliseconds for the calculation\nr: ratio of (errorest/(epsrel*value)); this should be less than 1 if the algorithm has converged\nconverged: boolean showing whether r < 1\nA value of NA indicates that the algorithm did not converge, but rather stopped because the maximum number of function evaluations had been reached.\n\n\n\n",
-      "last_modified": "2021-01-07T13:19:05-06:00"
+      "last_modified": "2021-01-07T13:34:49-06:00"
     },
     {
       "path": "index.html",
       "title": "GPU Integration Notes",
       "author": [],
       "contents": "\n\n\n\n",
-      "last_modified": "2020-12-16T12:17:34-06:00"
+      "last_modified": "2021-01-07T13:34:49-06:00"
     },
     {
       "path": "mac130389-description.html",
       "author": [],
       "contents": "\nThe MacBook machine used in these tests has a single 4-core 2.9 GHz Intel Core i7 processor.\n\n\n\n",
-      "last_modified": "2021-01-07T13:19:05-06:00"
+      "last_modified": "2021-01-07T13:34:50-06:00"
     },
     {
       "path": "power9_description.html",
       "author": [],
       "contents": "\nThe Power9 machine used in these tests is a PowerNV 8335-GTG (AC 922) system. It has two processors, each with 8 cores. Each core has 4 slices.\n\n\n\n",
-      "last_modified": "2021-01-07T13:19:06-06:00"
+      "last_modified": "2021-01-07T13:34:50-06:00"
     }
   ],
   "collections": ["posts/posts.json"]
