@@ -1,0 +1,264 @@
+---
+title: "Sub-region Termination Heuristics Comparison on Genz4_5D"
+description: |
+  Comparing the four heuristics against zero heuristic on cuda impelementation of parallel dcuhre.
+author:
+  - name: Ioannis Sakiotis
+    url: https://github.com/isaki001
+    affiliation: Old Dominion University
+    affiliation_url: https://www.odu.edu/
+date: 01-08-2021
+repository_url: https://github.com/marcpaterno/gpuintegrationnotes
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(rmarkdown)
+library(tidyverse)
+library(ldrd2020050)
+```
+
+```{r}
+read_csv <- function(filename){
+    df <- read.csv(file = paste(filename,".csv", sep=""), 
+                   header = TRUE, 
+                   sep=",")
+}
+
+```
+
+
+**Integral**:Genz4 5D  
+**epsrel**:2.56e-9  
+**true value** of 1.79132603674879e-06  
+**integration volume**: (0,1) on all 5 dimensions
+
+$$b = .5$$
+$$ f(x,y,z,w,v) = e^{-25^2 \cdot ((x-b)^2+(y-b)^2+(z-b)^2+(w-b)^2+(v-b)^2)}$$
+
+```{r}
+convRes <- read_csv("final_results")
+h0 <- read_csv("h0_Per_iteration")
+h1 <- read_csv("h1_Per_iteration")
+h2 <- read_csv("h2_Per_iteration")
+h3 <- read_csv("h3_Per_iteration")
+h4 <- read_csv("h4_Per_iteration")
+
+SetFormat <- function(df, label){
+  df <- mutate(df, fin.nreg = cumsum(it.fin.nreg))
+  df <- mutate(df, tot.fin.est = cumsum(it.fin.est))
+  df <- mutate(df, tot.fin.err = cumsum(it.fin.err))
+  df <- mutate(df, id = label)
+  df
+}
+
+h0 <- SetFormat(h0, "zero value")
+h1 <- SetFormat(h1, "aggressive+ no sc")
+h2 <- SetFormat(h2, "conservative +sc")
+h3 <- SetFormat(h3, "conservative + no sc")
+h4 <- SetFormat(h4, "aggressive +sc")
+```
+
+```{r}
+paged_table(convRes)
+```
+
+Zero Heuristic  
+
+```{r}
+paged_table(h0)
+```
+
+Heuristic 1.0: Aggressive errorest threshold  
+
+```{r}
+paged_table(h1)
+```
+
+Heuristic 2.0: Conservative errorest threshold AND **errorest > est** special case check  
+
+```{r}
+paged_table(h2)
+```
+
+Heuristic 3.0: Conservative errorest threshold 
+
+```{r}
+paged_table(h3)
+```
+
+Heuristic 4.0: Aggressive errorest threshold AND **errorest > est** special case check  
+
+```{r}
+paged_table(h4)
+```
+
+```{r}
+true_val <- 1.79132603674879e-06
+epsrel <- 2.56000000000000067e-09
+target_err <- abs(true_val)*epsrel
+
+PlotFinEstHeuristic <- function(df, true_val, label, minIter = 0){
+  ggplot() +
+  geom_hline(yintercept = true_val, color = "red")+
+  geom_errorbar(filter(df, iteration > minIter), mapping = aes(iteration, tot.fin.est, ymin=tot.fin.est, ymax=tot.est), alpha=0.5, size=0.5, width=0.2) +
+  geom_point(filter(df, iteration > minIter), mapping = aes(iteration, tot.fin.est, color = label))+
+  geom_point(filter(df, iteration > minIter), mapping = aes(iteration, tot.est-uneval.par.est, color = label))+
+  scale_y_log10()+
+  ylab("Finished Estimate")
+}
+
+PlotFinErrorestHeuristic <- function(df, err_target, label, minIter = 0){
+  ggplot() +
+  geom_hline(yintercept = err_target, color = "red")+
+  geom_errorbar(filter(df, iteration > minIter), mapping = aes(iteration, tot.fin.err, ymin=tot.fin.err, ymax=tot.err), alpha=0.5, size=0.5, width=0.2) +
+  geom_point(filter(df, iteration > minIter), mapping =aes(iteration, tot.fin.err, color = label))+
+  geom_point(filter(df, iteration > minIter), mapping = aes(iteration, tot.err-uneval.par.err, color = label))+
+  scale_y_log10()+
+  ylab("Finished Errorest")
+}
+
+PlotFinEstHeuristicsActive <- function(df, true_val, minIter = 0){
+  ggplot() +
+  geom_hline(yintercept = true_val, color = "red")+
+  geom_errorbar(filter(df, iteration > minIter), mapping = aes(iteration, tot.fin.est, ymin=tot.fin.est, ymax=tot.est, group=id), alpha=0.5, size=0.5, width=0.2) +
+  geom_point(filter(df, iteration > minIter), mapping =aes(iteration, tot.fin.est, group=id, color = id), alpha = .5)+
+  geom_point(filter(df, iteration > minIter), mapping = aes(iteration, tot.est-uneval.par.est,  group=id, color = id), alpha = .5)+
+  scale_y_log10()+
+  ylab("Finished Estimate")
+}
+
+PlotFinErrorestHeuristicsActive <- function(df, err_target, minIter = 0){
+  ggplot() +
+  geom_hline(yintercept = err_target, color = "red")+
+  geom_errorbar(filter(df, iteration > minIter), mapping = aes(iteration, tot.fin.err, ymin=tot.fin.err, ymax=tot.err, group=id), alpha=0.5, size=0.5, width=0.2) +
+  geom_point(filter(df, iteration > minIter), mapping =aes(iteration, tot.fin.err, group=id, color = id), alpha = .5)+
+  geom_point(filter(df, iteration > minIter), mapping = aes(iteration, tot.err-uneval.par.err, group=id, color = id), alpha = .5)+
+  scale_y_log10()+
+  ylab("Finished Errorest")
+}
+
+PlotFinEstHeuristics <- function(df, true_val, minIter = 0){
+  ggplot() +
+  geom_hline(yintercept = true_val, color = "red")+
+  geom_errorbar(filter(df, iteration > minIter), mapping = aes(iteration, tot.fin.est, ymin=tot.fin.est, ymax=tot.est, group=id), alpha=0.5, size=0.5, width=0.2) +
+  geom_point(filter(df, iteration > minIter), mapping =aes(iteration, tot.fin.est, group=id, color = id), alpha = .4)+
+  scale_y_log10()+
+  ylab("Finished Estimate")
+}
+
+PlotFinErrorestHeuristics <- function(df, err_target, minIter = 0){
+  ggplot() +
+  geom_hline(yintercept = err_target, color = "red")+
+  geom_errorbar(filter(df, iteration > minIter), mapping = aes(iteration, tot.fin.err, ymin=tot.fin.err, ymax=tot.err, group=id), alpha=0.5, size=0.5, width=0.2) +
+  geom_point(filter(df, iteration > minIter), mapping =aes(iteration, tot.fin.err, group=id, color = id), alpha = .1)+
+  scale_y_log10()+
+  ylab("Finished Errorest")
+}
+```
+
+The red lines indicate the actual estimate and the target errorest respectively.  
+The bottom points are the contribution from the finished regions, while the top points show the contribution from the active regions. 
+When a top point is not at the top of the vertical line, it indicates that there are unevaluated regions stored on the cpu, which are not being evaluated at that iteration but still contribute to the total estimate/errorest. 
+
+## Heuristic 0
+
+Regions are marked as finished if the errorest to estimate ratio is smaller than the relative tolerance or if region's estimate is exactly zero and its errorest is smaller than the absolute tolerance. 
+
+The estimate plot (top) indicates that the finished regions encompass a significant portion of the integral estimate.  
+The errorest plot shows diminishing returns in the errorest's improvement at the later iterations. 
+The finished estimate does not overshoot the target errorest indicating that the heuristic was not overly aggressive and that convergence should still be possible.
+
+```{r}
+PlotFinEstHeuristic(h0, true_val, "zero heuristic", 0)
+PlotFinErrorestHeuristic(h0, target_err, "zero heuristic", 0)
+```
+
+## Heuristic 1.0
+
+This and all subsequent heuristics carry over heuristic 0's check for regions with zero estimates and marks them as finished.
+It compares a region's estimate against the estimate of the leaves, scaled by the depth and relative error, and total number of regions.
+It also compares the error estimate against a soft target (aggressive, easier to mark as finished) but can exceed the remaining errorest budget for the finished regions and prevent convergence.
+
+Heuristic 1.0 causes the finished regions to dominate the contribution for the integral estimate.
+There is a disconnect though, as the same behavior does not occur in terms of the errorest and dcuhre converges.
+
+```{r}
+PlotFinEstHeuristic(h1, true_val, "heuristic 1.0", 0)
+PlotFinErrorestHeuristic(h1, target_err, "heuristic 1.0", 0)
+```
+
+## Heuristic 2.0
+
+```{r}
+PlotFinEstHeuristic(h2, true_val, "heuristic 2.0", 0)
+PlotFinErrorestHeuristic(h2, target_err, "heuristic 2.0", 0)
+```
+
+## Heuristic 3.0
+
+This compares a region's estimate against the same value as Heuristic 1.0.
+The difference is in the comparison of the error estimate. The value is compared against a hard target, that doesn't allow the total finished errorest to surpass the target errorest. This is a less aggressive heuristic on the errorest and we see the effect as the finished regions don't encompass as big a portion of the total estimate. 
+The finished error estimate is smaller than the target errorest, indicating that convergence is still possible, but the lack of aggression leads to dimishing returns in the errorest's decrease and thus a lack of convergence. 
+
+```{r}
+PlotFinEstHeuristic(h3, true_val, "heuristic 3.0", 0)
+PlotFinErrorestHeuristic(h3, target_err, "heuristic 3.0", 0)
+```
+
+## Heuristic 4.0
+
+This is the most stable heuristic.
+It utilizes the aggressive elements of heuristic 2.0 comparing the estimate and errorest in the same manner. 
+It also makes an independent comparison that can mark a region as finished, wiht the special condition when the estimate is smaller than the errorest.
+This attempts to classify the cases where the values are close to zero (but not exactly zero) and imposes less aggressive comparisons on the errorest, leaving the more significant regions the room for aggressive comparisons. 
+
+```{r}
+PlotFinEstHeuristic(h4, true_val, "heuristic 4.0", 0)
+PlotFinErrorestHeuristic(h4, target_err, "heuristic 4.0", 0)
+```
+
+## Heuristic Comparison
+
+We expect that for most integrals in moderate relative tolerances, the aggressiveness of the errorest threshold will be the definitive factor. The $$ errroest > epsrel $$ special case's effect is not expected to not make unless the integration space is partitioned to a large number of small regions with small contributions.
+
+The plots below shows us a direct comparison of the heuristics. 
+Things to look for:
+* number of iterations 
+* how close to the red line are the finished est/errorest values
+
+```{r}
+all_h <- rbind(h0, h1, h2, h3, h4)
+consv <- rbind(h0, h2, h3) 
+aggr <- rbind(h0, h1, h4)
+```
+
+```{r}
+PlotFinEstHeuristics(all_h, true_val, 25)
+PlotFinErrorestHeuristics(all_h, target_err, 25)
+```
+
+Showing the active contribution as the top dot.
+
+```{r}
+PlotFinEstHeuristicsActive(all_h, true_val, 25)
+PlotFinErrorestHeuristicsActive(all_h, target_err, 25)
+```
+
+The aggressive heuristics. The special case $$errorest > est$$ does not have a significant effect. 
+
+```{r}
+PlotFinEstHeuristicsActive(aggr, true_val, 25)
+PlotFinErrorestHeuristicsActive(aggr, target_err, 25)
+```
+
+The conservative heuristics behave almost exactly like the zero heuristic. The plot below will show the effect of the $errorest > est$ special case.
+
+```{r}
+PlotFinEstHeuristicsActive(rbind(h2, h3) , true_val, 25)
+PlotFinErrorestHeuristicsActive(rbind(h2, h3) , target_err, 25)
+```
