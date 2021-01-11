@@ -1,7 +1,8 @@
 ---
 title: "Sub-region Termination Heuristics Comparison on Genz4_5D"
 description: |
-  Comparing the four heuristics against zero heuristic on cuda impelementation of parallel dcuhre.
+  This article compares four heuristics against the "zero heurstic" in the CUDA
+  implementation of the parallel CUHRE algorithm.
 author:
   - name: Ioannis Sakiotis
     url: https://github.com/isaki001
